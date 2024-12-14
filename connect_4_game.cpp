@@ -1,29 +1,29 @@
 #include<bits/stdc++.h>
 using namespace std;
 
-mt19937 rng(chrono::steady_clock::now().time_since_epoch().count()); // mt19937_64 (long long)
+mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
 auto my_rand(long long l, long long r) {
     return uniform_int_distribution<long long>(l, r)(rng);
 }
 
-const int rows = 6, cols = 7, winSz = 4, points = 10000;
+const int Rows = 6, Cols = 7, WinSz = 4, Points = 10000;
 const char You = 'O', AI = 'X';
 
-void print(const vector<vector<char>> &board) {
-    for(int r = 0; r < rows; r++) {
-        for(int c = 0; c < cols; c++) {
-            cout << board[r][c] << " \n"[c + 1 == cols];
+void printBoard(const vector<vector<char>> &board) {
+    for(int r = 0; r < Rows; r++) {
+        for(int c = 0; c < Cols; c++) {
+            cout << board[r][c] << " \n"[c + 1 == Cols];
         }
     }
-    cout << "1 2 3 4 5 6 7\n"; // rows indexing
+    cout << "1 2 3 4 5 6 7\n"; // Rows indexing
 }
 
 bool isValidMove(const vector<vector<char>> &board, int col) {
-    return col >= 0 && col < cols && board[0][col] == '.';
+    return col >= 0 && col < Cols && board[0][col] == '.';
 }
 
 int makeMove(vector<vector<char>> &board, int col, char player) {
-    for(int r = rows - 1; r >= 0; r--) {
+    for(int r = Rows - 1; r >= 0; r--) {
         if(board[r][col] == '.') {
             board[r][col] = player;
             return r;
@@ -33,52 +33,46 @@ int makeMove(vector<vector<char>> &board, int col, char player) {
 }
 
 void undoMove(vector<vector<char>> &board, int row, int col) {
-    if(row >= 0 && row < rows) board[row][col] = '.';
+    if(row >= 0 && row < Rows) board[row][col] = '.';
 }
 
 bool isBoardFull(const vector<vector<char>> &board) {
-    for(int c = 0; c < cols; c++) {
-        if(board[0][c] == '.') return 0;
+    for(int c = 0; c < Cols; c++) {
+        if(board[0][c] == '.') return false;
     }
-    return 1;
+    return true;
 }
 
 bool isWinningMove(const vector<vector<char>> &board, int row, int col, char ch) {
-    int cnt1, cnt2, r, c; 
-    // Vertical
-    cnt1 = 0, r = row + 1;
-    while(r < rows && board[r][col] == ch && cnt1 + 1 < winSz) ++r, ++cnt1;
-    if(cnt1 + 1 >= winSz) return 1;
+    auto isValid = [&](int r, int c) {
+        return r >= 0 && r < Rows && c >= 0 && c < Cols && board[r][c] == ch;
+    };
 
-    // Down Left Corner
-    cnt1 = 0, cnt2 = 0, r = row + 1, c = col - 1;
-    while(r < rows && c >= 0 && board[r][c] == ch && cnt1 + 1 < winSz) ++r, --c, ++cnt1;
-    r = row - 1, c = col + 1;
-    while(r >= 0 && c < cols && board[r][c] == ch && cnt1 + cnt2 + 1 < winSz) --r, ++c, ++cnt2;
-    if(cnt1 + cnt2 + 1 >= winSz) return 1;
-
-    // Down Right Corner
-    cnt1 = 0, cnt2 = 0, r = row - 1, c = col - 1;
-    while(r >= 0 && c >= 0 && board[r][c] == ch && cnt1 + 1 < winSz) --r, --c, ++cnt1;
-    r = row + 1, c = col + 1;
-    while(r < rows && c < cols && board[r][c] == ch && cnt1 + cnt2 + 1 < winSz) ++r, ++c, ++cnt2;
-    if(cnt1 + cnt2 + 1 >= winSz) return 1;
+    // Directions=> vertical, horizontal, diagonals
+    vector<pair<int, int>> directions = {{1, 0}, {0, 1}, {1, 1}, {1, -1}};
     
-    // Horizontal
-    cnt1 = 0, cnt2 = 0, c = col;
-    while(--c >= 0 && ch == board[row][c] && cnt1 + 1 < winSz) ++cnt1; // Left
-    c = col;
-    while(++c < cols && ch == board[row][c] && cnt1 + cnt2 + 1 < winSz) ++cnt2; // Right
-    if(cnt1 + cnt2 + 1 >= winSz) return 1;
-
-    return 0;
+    for(auto &[dr, dc] : directions) {
+        int cnt = 1;
+        // Check forward direction
+        for(int i = 1; i < WinSz && cnt < WinSz; i++) {
+            if (isValid(row + i * dr, col + i * dc)) cnt++;
+            else break;
+        }
+        // Check backward direction
+        for(int i = 1; i < WinSz && cnt < WinSz; i++) {
+            if (isValid(row - i * dr, col - i * dc)) cnt++;
+            else break;
+        }
+        if(cnt >= WinSz) return true;
+    }
+    return false;
 }
 
-int findWinningMove(const vector<vector<char>> &board) { // +points for AI win, -points for Human win, 0 otherwise
-    for(int r = 0; r < rows; r++) {
-        for(int c = 0; c < cols; c++) {
+int findWinningMove(const vector<vector<char>> &board) { // +Points for AI win, -Points for Human win, 0 otherwise
+    for(int r = 0; r < Rows; r++) {
+        for(int c = 0; c < Cols; c++) {
             if(board[r][c] != '.' && isWinningMove(board, r, c, board[r][c])) {
-                return board[r][c] == AI ? +points : -points;
+                return board[r][c] == AI ? +Points : -Points;
             }
         }
     }
@@ -86,32 +80,32 @@ int findWinningMove(const vector<vector<char>> &board) { // +points for AI win, 
 }
 
 int minimax(vector<vector<char>> &board, int depth, int alpha, int beta, bool isMaximizingPlayer) {
-    int point = findWinningMove(board);
-    if(abs(point) == points or depth == 0 or isBoardFull(board)) return point;
+    int score = findWinningMove(board);
+    if(abs(score) == Points or depth == 0 or isBoardFull(board)) return score;
     if(isMaximizingPlayer) {
         int mx = INT_MIN;
-        for(int c = 0; c < cols; c++) {
+        for(int c = 0; c < Cols; c++) {
             if(isValidMove(board, c)) {
                 int r = makeMove(board, c, AI);
                 int x = minimax(board, depth - 1, alpha, beta, 0);
                 undoMove(board, r, c);
                 mx = max(mx, x);
                 alpha = max(alpha, x);
-                if(alpha >= beta) return mx;
+                if(beta <= alpha) break;
             }
         }
         return mx;
     }
     else {
         int mn = INT_MAX;
-        for(int c = 0; c < cols; c++) {
+        for(int c = 0; c < Cols; c++) {
             if(isValidMove(board, c)) {
                 int r = makeMove(board, c, You);
                 int x = minimax(board, depth - 1, alpha, beta, 1);
                 undoMove(board, r, c);
                 mn = min(mn, x);
                 beta = min(beta, mn);
-                if(alpha >= beta) return mn;
+                if(beta <= alpha) break;
             }
         }
         return mn;
@@ -120,70 +114,61 @@ int minimax(vector<vector<char>> &board, int depth, int alpha, int beta, bool is
 }
 
 int findBestMove(vector<vector<char>> &board, int depth) {
-    map<int, vector<int>> mp;
-    for(int c = 0; c < cols; c++) {
+    map<int, vector<int>> scores;
+    for(int c = 0; c < Cols; c++) {
         // cout << c << " ";
         if(isValidMove(board, c)) {
             int r = makeMove(board, c, AI);
             int x = minimax(board, depth - 1, INT_MIN, INT_MAX, 0);
             undoMove(board, r, c);
-            mp[x].push_back(c);
+            scores[x].push_back(c);
         }
     }
-    auto &vec = prev(mp.end())->second;
-    // for(auto &i: vec) cout << i << " "; cout << endl;
-    return vec[my_rand(0, int(vec.size()) - 1)];
+    auto &bestMoves = prev(scores.end())->second;
+    // for(auto &i: bestMoves) cout << i << " "; cout << endl;
+    return bestMoves[my_rand(0, int(bestMoves.size()) - 1)];
 }
 
 int main() {
-    vector<vector<char>> board(rows, vector<char> (cols, '.'));
-    bool turn = my_rand(0, 1); // 0 => Your Turn, 1 => AI Turn
+    vector<vector<char>> board(Rows, vector<char>(Cols, '.'));
+    bool isPlayerTurn = my_rand(0, 1);
     cout << "--- Welcome to Connect Four! ---\n";
-    if(turn == 0) {
-        cout << "=> First turn is Yours\n";
-        print(board);
-    }
-    else cout << "First turn is AI\n";
+    cout << (isPlayerTurn ? "Your turn first!\n" : "AI starts first!\n");
 
-    int row, col;
     while(true) {
-        if(turn == 0) { // Your turn
+        printBoard(board);
+        if(isPlayerTurn) {
+            int col;
             cout << "Enter your move (1-7): ";
-            cin >> col; --col; // 0'base
-            
-            if(!isValidMove(board, col)) {
-                cout << "Invalid move. Try again. \2\n";
+            cin >> col;
+            if(col < 1 or col > Cols or !isValidMove(board, col - 1)) {
+                cout << "Invalid move. Try again.\n";
                 continue;
             }
-
-            row = makeMove(board, col, You);
-            // cout << "=> " << row << " " << col << " = " << isWinningMove(board, row, col, You) << "\n";//<====
-            if(isWinningMove(board, row, col, You)) {
-                print(board);
+            int row = makeMove(board, col - 1, You);
+            if(isWinningMove(board, row, col - 1, You)) {
+                printBoard(board);
                 cout << "==> Congratulations, You Win! <==\n";
-                return 0;
+                break;
             }
-        }
-        else { // AI
+        } 
+        else {
             cout << "AI is making its move...\n";
-            col = findBestMove(board, 6);
-            // cout << "=> " << col << "\n";
-            row = makeMove(board, col, AI);
+            int col = findBestMove(board, 6);
+            int row = makeMove(board, col, AI);
             cout << "AI chose column: " << col + 1 << "\n";
             if(isWinningMove(board, row, col, AI)) {
-                print(board);
-                cout << "==> Bad Luck, AI Win! <==\n";
-                return 0;
+                printBoard(board);
+                cout << "==> AI Wins! Better luck next time. <==\n";
+                break;
             }
         }
-        cout << "\n";
-        print(board);
-        // cout << "\n";
         if(isBoardFull(board)) {
+            printBoard(board);
             cout << "It's a draw!\n";
-            return 0;
+            break;
         }
-        turn ^= 1;
+        isPlayerTurn ^= 1;
     }
     return 0;
 }
