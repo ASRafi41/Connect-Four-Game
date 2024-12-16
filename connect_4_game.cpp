@@ -116,17 +116,40 @@ int minimax(vector<vector<char>> &board, int depth, int alpha, int beta, bool is
 int findBestMove(vector<vector<char>> &board, int depth) {
     map<int, vector<int>> scores;
     for(int c = 0; c < Cols; c++) {
-        // cout << c << " ";
         if(isValidMove(board, c)) {
+            // cout << c << " ";
             int r = makeMove(board, c, AI);
             int x = minimax(board, depth - 1, INT_MIN, INT_MAX, 0);
             undoMove(board, r, c);
+            if(isWinningMove(board, r, c, AI)) return c;
             scores[x].push_back(c);
         }
     }
     auto &bestMoves = prev(scores.end())->second;
     // for(auto &i: bestMoves) cout << i << " "; cout << endl;
     return bestMoves[my_rand(0, int(bestMoves.size()) - 1)];
+}
+
+void SetColor(int textColor) { // Text Color
+    cout << "\033[" << textColor << "m";
+}
+void ResetColor() { 
+    cout << "\033[0m"; 
+}
+void printAns(const vector<vector<char>> &board, int color) {
+    for(int r = 0; r < Rows; r++) {
+        for(int c = 0; c < Cols; c++) {
+            if(board[r][c] != '.' && isWinningMove(board, r, c, board[r][c])) {
+                SetColor(color);
+                cout << board[r][c] << " ";
+                ResetColor();
+            }
+            else {
+                cout << board[r][c] << " ";
+            }
+        }
+        cout << endl;
+    }
 }
 
 int main() {
@@ -147,10 +170,16 @@ int main() {
             }
             int row = makeMove(board, col - 1, You);
             if(isWinningMove(board, row, col - 1, You)) {
-                printBoard(board);
-                cout << "==> Congratulations, You Win! <==\n";
+                // printBoard(board);
+                cout << endl;
+                printAns(board, 32);
+
+                SetColor(35);
+                cout << "==> Congratulations, You Win! <==\n\n";
+                ResetColor();
                 break;
             }
+            else cout << endl;
         } 
         else {
             cout << "AI is making its move...\n";
@@ -158,10 +187,16 @@ int main() {
             int row = makeMove(board, col, AI);
             cout << "AI chose column: " << col + 1 << "\n";
             if(isWinningMove(board, row, col, AI)) {
-                printBoard(board);
-                cout << "==> AI Wins! Better luck next time. <==\n";
+                // printBoard(board);
+                cout << endl;
+                printAns(board, 31);
+
+                SetColor(35);
+                cout << "==> AI Wins! Better luck next time. <==\n\n";
+                ResetColor();
                 break;
             }
+            else cout << endl;
         }
         if(isBoardFull(board)) {
             printBoard(board);
