@@ -183,7 +183,7 @@ int main() {
         } 
         else {
             cout << "AI is making its move...\n";
-            int col = findBestMove(board, rows);
+            int col = findBestMove(board, Rows);
             int row = makeMove(board, col, AI);
             cout << "AI chose column: " << col + 1 << "\n";
             if(isWinningMove(board, row, col, AI)) {
