@@ -15,7 +15,7 @@ void printBoard(const vector<vector<char>> &board) {
             cout << board[r][c] << " \n"[c + 1 == Cols];
         }
     }
-    for(int r = 1; r <= Rows; r++) cout << r << " \n"[r == Rows];
+    for(int c = 1; c <= Cols; c++) cout << c << " \n"[c == Cols];
 }
 
 bool isValidMove(const vector<vector<char>> &board, int col) {
@@ -155,8 +155,8 @@ void printAns(const vector<vector<char>> &board, int color) {
 int main() {
     vector<vector<char>> board(Rows, vector<char>(Cols, '.'));
     bool isPlayerTurn = my_rand(0, 1);
-    cout << "--- Welcome to Connect Four! ---\n";
-    cout << (isPlayerTurn ? "Your turn first!\n" : "AI starts first!\n");
+    SetColor(92); cout << "--- Welcome to Connect Four! ---\n"; ResetColor();
+    SetColor(35); cout << (isPlayerTurn ? "=> Your turn first!\n" : "=> AI starts first!\n"); ResetColor();
 
     while(true) {
         printBoard(board);
@@ -165,7 +165,7 @@ int main() {
             cout << "Enter your move (1-7): ";
             cin >> col;
             if(col < 1 or col > Cols or !isValidMove(board, col - 1)) {
-                cout << "Invalid move. Try again.\n";
+                SetColor(31); cout << "Invalid move. Try again.\n"; ResetColor();
                 continue;
             }
             int row = makeMove(board, col - 1, You);
@@ -174,9 +174,7 @@ int main() {
                 cout << endl;
                 printAns(board, 32);
 
-                SetColor(35);
-                cout << "==> Congratulations, You Win! <==\n\n";
-                ResetColor();
+                SetColor(35); cout << "==> Congratulations, You Win! <==\n\n"; ResetColor();
                 break;
             }
             else cout << endl;
@@ -191,16 +189,14 @@ int main() {
                 cout << endl;
                 printAns(board, 31);
 
-                SetColor(35);
-                cout << "==> AI Wins! Better luck next time. <==\n\n";
-                ResetColor();
+                SetColor(35); cout << "==> AI Wins! Better luck next time. <==\n\n"; ResetColor();
                 break;
             }
             else cout << endl;
         }
         if(isBoardFull(board)) {
             printBoard(board);
-            cout << "It's a draw!\n";
+            SetColor(91); cout << "It's a draw!\n"; ResetColor();
             break;
         }
         isPlayerTurn ^= 1;
