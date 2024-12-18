@@ -15,7 +15,7 @@ void printBoard(const vector<vector<char>> &board) {
             cout << board[r][c] << " \n"[c + 1 == Cols];
         }
     }
-    cout << "1 2 3 4 5 6 7\n"; // Rows indexing
+    for(int r = 1; r <= Rows; r++) cout << r << " \n"[r == Rows];
 }
 
 bool isValidMove(const vector<vector<char>> &board, int col) {
